@@ -8,6 +8,12 @@ This repository includes a simple Go program for an introductory presentation.
 2. Navigate to the `demo` directory.
 3. Execute `go run .` to run the sample program.
 
-The output demonstrates basic syntax, functions, concurrency using goroutines,
-a map demonstration highlighting initialization and iteration behaviors, and a
-struct usage demonstration showing zero values, literals, and pointer updates.
+The output demonstrates:
+
+- basic syntax with functions and goroutines
+- variable declaration styles and recommendations
+- use of `interface{}` with type assertions
+- channels used as locks and for message passing
+- goroutine best practices with `sync.WaitGroup`
+- a map demonstration highlighting initialization and iteration behaviors
+- struct usage showing zero values, literals, and pointer updates.

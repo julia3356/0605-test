@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -91,6 +92,122 @@ func structDemo() {
 	fmt.Printf("anonymous: %#v\n", anon)
 }
 
+// varDemo illustrates several forms of variable declaration
+// and recommends when to use each style.
+func varDemo() {
+	fmt.Println("\nVariable declarations:")
+
+	// 1. Declare with var and explicit type for zero value variables
+	//    when a variable will be assigned later.
+	var a int
+	a = 1
+	fmt.Println("var with type ->", a)
+
+	// 2. Use short declaration := inside functions for most cases
+	//    where the type can be inferred.
+	b := "quick"
+	fmt.Println(":= inferred ->", b)
+
+	// 3. Declare and initialize with var when explicit type improves clarity
+	var c float64 = 3.14
+	fmt.Println("var with init ->", c)
+
+	// 4. Group related declarations in a block when many variables
+	//    share the same context.
+	var (
+		d int
+		e string = "grouped"
+	)
+	fmt.Println("block ->", d, e)
+}
+
+// interfaceDemo shows how the empty interface can hold any type and
+// why type assertions are needed. This pattern is generally used when
+// the value's concrete type is unknown in advance.
+func interfaceDemo() {
+	fmt.Println("\ninterface{} usage:")
+
+	var any interface{}
+
+	// Store different types. The actual type is erased until asserted.
+	any = 42
+	fmt.Printf("value: %v type: %T\n", any, any)
+
+	any = "hello"
+	fmt.Printf("value: %v type: %T\n", any, any)
+
+	// Use a type assertion to retrieve the underlying value safely.
+	if s, ok := any.(string); ok {
+		fmt.Println("asserted string length ->", len(s))
+	}
+
+	// Type switches are convenient for handling several possibilities.
+	any = 99.9
+	switch v := any.(type) {
+	case int:
+		fmt.Println("got int", v)
+	case float64:
+		fmt.Println("got float64", v)
+	default:
+		fmt.Println("unknown type")
+	}
+}
+
+// channelLockDemo demonstrates using a channel as a binary semaphore
+// to control access to a critical section. It's a lightweight
+// alternative to sync.Mutex but should be released quickly.
+func channelLockDemo() {
+	fmt.Println("\nChannel as lock:")
+
+	lock := make(chan struct{}, 1) // capacity 1 for mutual exclusion
+
+	critical := func(id int) {
+		lock <- struct{}{} // acquire
+		fmt.Printf("worker %d in critical section\n", id)
+		time.Sleep(10 * time.Millisecond)
+		<-lock // release
+	}
+
+	for i := 0; i < 2; i++ {
+		go critical(i)
+	}
+	time.Sleep(50 * time.Millisecond)
+}
+
+// channelMessageDemo shows typical message passing via channels,
+// including buffered channels and closure behavior.
+func channelMessageDemo() {
+	fmt.Println("\nChannel messaging:")
+
+	// Buffered channel allows sending without immediate receiver.
+	ch := make(chan string, 2)
+	ch <- "a"
+	ch <- "b"
+	close(ch) // signal no more values
+
+	for msg := range ch {
+		fmt.Println("received", msg)
+	}
+}
+
+// goroutineDemo highlights best practices: use WaitGroup to wait for
+// goroutines to finish and capture loop variables correctly.
+func goroutineDemo() {
+	fmt.Println("\nGoroutine best practices:")
+
+	var wg sync.WaitGroup
+	for i := 0; i < 3; i++ {
+		i := i // capture loop variable
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fmt.Printf("goroutine %d working\n", i)
+			time.Sleep(20 * time.Millisecond)
+		}()
+	}
+	wg.Wait()
+}
+
 func main() {
 	fmt.Println("## Basic Go Demo ##")
 	fmt.Println("Hello, Go!")
@@ -102,6 +219,21 @@ func main() {
 
 	fmt.Println("\nConcurrency example:")
 	concurrencyDemo()
+
+	fmt.Println("\nVariable example:")
+	varDemo()
+
+	fmt.Println("\ninterface{} example:")
+	interfaceDemo()
+
+	fmt.Println("\nChannel lock example:")
+	channelLockDemo()
+
+	fmt.Println("\nChannel messaging example:")
+	channelMessageDemo()
+
+	fmt.Println("\nGoroutine example:")
+	goroutineDemo()
 
 	fmt.Println("\nMap example:")
 	mapDemo()
